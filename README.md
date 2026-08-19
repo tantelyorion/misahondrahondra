@@ -51,7 +51,7 @@ build_exe.bat
 
 - **Détection des fenêtres** : `win32gui.EnumWindows`, en excluant la barre des tâches, le bureau, et les fenêtres système
 - **Animation** : chaque fenêtre a un profil de danse aléatoire (phase, vitesse, amplitude) basé sur des sinusoïdes, pour un effet "bureau qui twerke" non synchronisé de façon robotique
-- **Musique** : `pygame.mixer`, durée détectée automatiquement pour caler l'animation
+- **Musique** : API Windows MCI (`winmm.dll` via `ctypes`, intégrée à Windows — aucune dépendance externe), durée détectée automatiquement pour caler l'animation
 - **Arrêt d'urgence** : `GetAsyncKeyState(VK_ESCAPE)` vérifié à chaque frame
 - **Sécurité** : `try/finally` garantit la restauration des positions même en cas d'erreur ou d'interruption
 
