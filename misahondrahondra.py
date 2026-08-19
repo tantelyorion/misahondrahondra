@@ -16,6 +16,7 @@ connexion réseau requise.
 Nécessite Windows + Python 3.9+  (voir requirements.txt)
 """
 
+import ctypes
 import math
 import os
 import random
@@ -31,11 +32,16 @@ except ImportError:
     print("Ce script nécessite pywin32 : pip install pywin32")
     sys.exit(1)
 
-try:
-    import pygame
-    HAS_PYGAME = True
-except ImportError:
-    HAS_PYGAME = False
+# Lecture audio via l'API Windows MCI (winmm.dll) — aucune dépendance externe,
+# aucune compilation nécessaire, fonctionne avec n'importe quelle version de Python.
+_winmm = ctypes.windll.winmm
+_MCI_ALIAS = "misahondrahondra"
+
+
+def _mci(command):
+    buf = ctypes.create_unicode_buffer(256)
+    _winmm.mciSendStringW(command, buf, 255, 0)
+    return buf.value
 
 
 # --------------------------------------------------------------------------
@@ -140,21 +146,17 @@ def show_activation_banner(duration_ms=2500):
 
 def start_music_and_get_duration(base_dir):
     """Lance la musique si dispo, retourne la durée en secondes (ou None)."""
-    if not HAS_PYGAME:
-        print("pygame absent : le prank continuera SANS musique.")
-        return None
-
     music_path = os.path.join(base_dir, MUSIC_FILENAME)
     if not os.path.isfile(music_path):
         print(f"'{MUSIC_FILENAME}' introuvable à côté du programme : pas de musique.")
         return None
 
     try:
-        pygame.mixer.init()
-        sound = pygame.mixer.Sound(music_path)
-        duration = sound.get_length()
-        pygame.mixer.music.load(music_path)
-        pygame.mixer.music.play()
+        _mci(f'close {_MCI_ALIAS}')  # au cas où une session précédente traînerait
+        result = _mci(f'open "{music_path}" type mpegvideo alias {_MCI_ALIAS}')
+        length_ms = _mci(f'status {_MCI_ALIAS} length')
+        duration = int(length_ms) / 1000.0 if length_ms.strip().isdigit() else None
+        _mci(f'play {_MCI_ALIAS}')
         return duration
     except Exception as e:
         print(f"Impossible de lire la musique ({e}). Le prank continue sans son.")
@@ -162,8 +164,11 @@ def start_music_and_get_duration(base_dir):
 
 
 def stop_music():
-    if HAS_PYGAME and pygame.mixer.get_init():
-        pygame.mixer.music.stop()
+    try:
+        _mci(f'stop {_MCI_ALIAS}')
+        _mci(f'close {_MCI_ALIAS}')
+    except Exception:
+        pass
 
 
 # --------------------------------------------------------------------------
