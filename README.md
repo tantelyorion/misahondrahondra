@@ -55,10 +55,10 @@ build_exe.bat
 - **Arrêt d'urgence** : `GetAsyncKeyState(VK_ESCAPE)` vérifié à chaque frame
 - **Sécurité** : `try/finally` garantit la restauration des positions même en cas d'erreur ou d'interruption
 
-## 🎬 Idée de pitch
+## 🎬 Idée de projet
 
 > *"Quand Misahondrahondra quitte TikTok et arrive directement sur ton Windows."*
 
 ## Licence
 
-À toi de choisir (MIT recommandé pour un projet meme open-source).
+MIT.
